@@ -7,6 +7,7 @@ public:
 	Vector center;
 	Vector color;
 	double radius;
+	const char* material;
 	virtual const char* Distinguish();
 
 };

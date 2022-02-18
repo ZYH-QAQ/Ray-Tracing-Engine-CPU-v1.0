@@ -12,8 +12,8 @@ public:
 	Ray();
 	Ray(Vector, Vector);
 	//检测碰撞，若不发生碰撞则返回-1。同时用传递引用的方法得到法向量和颜色。
-	double CollideSphere(Sphere,Vector&,Vector&);
-	double CollideCube(Cube,Vector&,Vector&);
+	double CollideSphere(const Sphere&,Vector&,Vector&,const char*&);
+	double CollideCube(const Cube&,Vector&,Vector&,const char*&);
 	//double CollideCubicLight(CubicLight, Vector&);
 	// 
 	//返回t时刻的光线位置。

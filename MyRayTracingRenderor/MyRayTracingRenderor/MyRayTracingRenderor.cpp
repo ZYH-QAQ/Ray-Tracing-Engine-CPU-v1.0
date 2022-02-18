@@ -23,7 +23,6 @@ int num;
 void Create(int xLength, int yLength, int depth);
 void DrawPixel();
 void limit();
-
 long int* nowTimeP, * startTimeP;
 int main()
 {
@@ -35,17 +34,45 @@ int main()
 	for (;i < cubeNum;i++)
 	{
 		Cube* cubeP = new Cube();
+		int type = 0;
 		geometry[i] = cubeP;
 		scene >> ((Cube*)geometry[i])->xMax >> ((Cube*)geometry[i])->xMin >> ((Cube*)geometry[i])->yMax >> ((Cube*)geometry[i])->yMin >> ((Cube*)geometry[i])->zMax >> ((Cube*)geometry[i])->zMin;
 		scene >> ((Cube*)geometry[i])->color.x >> ((Cube*)geometry[i])->color.y >> ((Cube*)geometry[i])->color.z;
+		scene >> type;
+		switch (type)
+		{
+		case 0:
+			(((Cube*)geometry[i])->material) = "DIFF";
+			break;
+		case 1:
+			(((Cube*)geometry[i])->material) = "REFL";
+			break;
+		default:
+			(((Cube*)geometry[i])->material) = "DIFF";
+			break;
+		}
 	}
 	int sphereNum;
 	scene >> sphereNum;
 	for (;i < cubeNum + sphereNum;i++)
 	{
 		geometry[i] = new Sphere();
+		int type = 0;
 		scene >> (((Sphere*)geometry[i])->center.x) >> (((Sphere*)geometry[i])->center.y) >> (((Sphere*)geometry[i])->center.z) >> (((Sphere*)geometry[i])->radius);
 		scene >> (((Sphere*)geometry[i])->color.x) >> (((Sphere*)geometry[i])->color.y) >> (((Sphere*)geometry[i])->color.z);
+		scene >> type;
+		switch (type)
+		{
+		case 0:
+			(((Sphere*)geometry[i])->material) = "DIFF";
+			break;
+		case 1:
+			(((Sphere*)geometry[i])->material) = "REFL";
+			break;
+		default:
+			(((Sphere*)geometry[i])->material) = "DIFF";
+			break;
+		}
 	}
 	int lightNum;
 	scene >> lightNum;
@@ -59,8 +86,9 @@ int main()
 	}
 	num = i;
 	//Vector testNorm, testColor;
-	//double tTest = Ray(Vector(0, 0, 0), Vector::Normalize(Vector(0, 200, -200))).Ray::CollideSphere(((Sphere*)geometry)[7], testNorm, testColor);
-	//Vector test = Trace(Ray(Vector(0, 0, 0), Vector::Normalize(Vector(0, 200, -200))));
+	//const char* sTest;
+	//double tTest = Ray(Vector(0, 0, 0), Vector::Normalize(Vector(200, -125, -400))).Ray::CollideSphere(*(Sphere*)(geometry[7]), testNorm, testColor,sTest);
+	//Vector test = Trace(Ray(Vector(0, 0, 0), Vector::Normalize(Vector(200, -200, -400))));
 	DrawPixel();
 	//limit();
 	return 0;
@@ -90,13 +118,14 @@ void DrawPixel()
 				{
 					double eachX = centerX + k / (sqrt_ssp*1.0);
 					double eachY = centerY + l / (sqrt_ssp*1.0);
-					Ray ray = Ray(Vector(0, 0, 0), Vector::Normalize(Vector(eachX, eachY, -50.0*yLength/360)));
+					Vector startPos = Vector(centerX / xLength * 550, centerY / xLength * 550, 0);
+					Ray ray = Ray(startPos, Vector::Normalize(Vector(eachX, eachY, -600.0*yLength/360)));
 					NRGB = NRGB + Trace(ray);
 				}
 			}
 			Vector RGB = NRGB / (sqrt_ssp*sqrt_ssp*1.0);
 			fprintf(fImage, "%d %d %d ", (int)(pow(RGB.x > 1 ? 1 : RGB.x,1/2.2)*255+.5), (int)(pow(RGB.y > 1 ? 1 : RGB.y,1/2.2)*255+.5), (int)(pow(RGB.z > 1 ? 1 : RGB.z,1/2.2)*255+.5));
-			fprintf(stderr, "\rRendering ssp = %d res = %dx%d   %5.4f%%",sqrt_ssp*sqrt_ssp,xLength,yLength, (j * xLength + i) / (yLength * xLength * 1.0) * 100);
+			fprintf(stderr, "\rRendering ssp = %d res = %dx%d   %5.3f%%",sqrt_ssp*sqrt_ssp,xLength,yLength, (j * xLength + i) / (yLength * xLength * 1.0) * 100);
 			//*nowTimeP = clock();
 			//printf("Estimated time left: %ld", (720 * 1280 - j * 1280 - i) * (*nowTimeP-*startTimeP)/ CLOCKS_PER_SEC / (j * 1280 + i + 1));
 		}

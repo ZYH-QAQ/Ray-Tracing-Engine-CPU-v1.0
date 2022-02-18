@@ -15,11 +15,12 @@ Ray::Ray(Vector startPoint, Vector rayDirection)
 	this->startPoint = startPoint;
 }
 //检测Ray与球是否碰撞。若不碰撞或碰撞时间为负数，则返回-1，同时将法向量设为default；
-double Ray::CollideSphere(Sphere sphere, Vector& normalVector,Vector& color)
+double Ray::CollideSphere(const Sphere& sphere, Vector& normalVector, Vector& color, const char*& material)
 {
-	double x0 = this->startPoint.x;
-	double y0 = this->startPoint.y;
-	double z0 = this->startPoint.z;
+	double zero = 1e-4;
+	double x0 = this->startPoint.x - sphere.center.x;
+	double y0 = this->startPoint.y - sphere.center.y;
+	double z0 = this->startPoint.z - sphere.center.z;
 	double x1 = this->rayDirection.x;
 	double y1 = this->rayDirection.y;
 	double z1 = this->rayDirection.z;
@@ -33,17 +34,20 @@ double Ray::CollideSphere(Sphere sphere, Vector& normalVector,Vector& color)
 	else
 	{
 		color = sphere.color;
-		double result1 = (sqrt(Delta) - 2 * (x1 * x0 + y1 * y0 + z1 * z0)) / (2 * (x1 * x1 + y1 * y1 + z1 * z1));
-		double result2 = (-sqrt(Delta) - 2 * (x1 * x0 + y1 * y0 + z1 * z0)) / (2 * (x1 * x1 + y1 * y1 + z1 * z1));
-		if (result1 > 0 && result2 > 0)
+		material = sphere.material;
+		double result1 = (sqrt(Delta) - 2 * (x1 * x0 + y1 * y0 + z1 * z0)) / (2);
+		double result2 = (-sqrt(Delta) - 2 * (x1 * x0 + y1 * y0 + z1 * z0)) / (2);
+		result1 = (result1<zero&& result1>-zero) ? 0 : result1;
+		result2 = (result2<zero&& result2>-zero) ? 0 : result2;
+		if (result1 >= 0 && result2 >= 0)
 		{
-			normalVector = Vector::Normalize(this->Current(result1 > result2 ? result2 : result1)-sphere.center);
-			return result1 > result2 ? result2 : result1;
+			normalVector = Vector::Normalize(this->Current(result2)-sphere.center);
+			return result2;
 		}
 		if (result1 * result2 < 0)
 		{
-			normalVector = Vector::Normalize(this->Current(result1 > result2 ? result1 : result2) - sphere.center);
-			return result1 > result2 ? result1 : result2;
+			normalVector = Vector::Normalize(this->Current(result1) - sphere.center);
+			return result1;
 		}
 		if (result1 < 0 && result2 < 0)
 		{
@@ -67,7 +71,7 @@ double Select(double x, double y, double z)
 	}
 	return max;
 }
-double Ray::CollideCube(Cube cube, Vector& normalVector,Vector& color)
+double Ray::CollideCube(const Cube& cube, Vector& normalVector,Vector& color,const char*& material)
 {
 	double x0 = this->startPoint.x;
 	double y0 = this->startPoint.y;
@@ -94,6 +98,7 @@ double Ray::CollideCube(Cube cube, Vector& normalVector,Vector& color)
 	{
 		double tMin = Select(txMin, tyMin, tzMin);
 		color = cube.color;
+		material = cube.material;
 		if (tMin == txMin)
 		{
 			normalVector = Vector(1, 0, 0) * rayDirection > 0 ? Vector(-1, 0, 0) : Vector(1, 0, 0);
